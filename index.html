@@ -5,7 +5,7 @@
   <title>Music QR Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial, sans‑serif; text-align: center; padding: 20px; background: #f0f0f0; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f0f0f0; }
     h1 { margin-bottom: 20px; }
     #reader { width: 300px; margin: auto; }
     iframe { margin-top: 20px; width: 300px; height: 80px; border: none; }
@@ -19,6 +19,7 @@
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
+  // Map song IDs to Spotify embed URLs
   const songs = {
     "RG01": "https://open.spotify.com/embed/track/5YoITs1m0q8UOQ4AW7N5ga",  // Gasolina
     "RG02": "https://open.spotify.com/embed/track/0xVQGRRzpWgT9cshNdbx6B",  // Vivir Mi Vida
@@ -27,18 +28,21 @@
     "RG05": "https://open.spotify.com/embed/track/1H8oZ0F1l7Mx0z1oP3p3s9"   // La Gasolina Remix
   };
 
+  // Play song given the scanned ID
   function playSong(id) {
-    const url = songs[id];
+    const cleanId = id.trim(); // remove extra spaces or newlines
+    const url = songs[cleanId];
     if (url) {
       document.getElementById("player").innerHTML =
         `<iframe src="${url}" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
     } else {
-      alert("Song ID not found!");
+      alert("Song ID not found!");
     }
   }
 
   const html5QrCode = new Html5Qrcode("reader");
 
+  // Start the camera and scan
   Html5Qrcode.getCameras().then(devices => {
     if (devices && devices.length) {
       html5QrCode.start(

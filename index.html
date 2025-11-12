@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Music QR Scanner</title>
 <style>
-  /* General body */
   body {
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(160deg, #6a0dad, #9b59b6);
@@ -20,24 +19,44 @@
   }
 
   h1 {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     font-weight: 600;
     font-size: 24px;
     text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
   }
 
+  /* Silver bordered scanner box */
   #reader {
+    position: relative;
     width: 320px;
+    height: 320px;
     max-width: 90%;
-    padding: 15px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 20px;
-    border: 2px solid #fff;
-    margin-bottom: 25px;
+    background: rgba(255,255,255,0.08);
+    border: 3px solid rgba(255,255,255,0.9);
+    border-radius: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+  }
+
+  /* Glow effect when active */
+  #reader.active {
+    box-shadow: 0 0 20px 6px rgba(255,255,255,0.8);
+  }
+
+  /* Make sure the camera feed stays centered */
+  #reader video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 22px;
   }
 
   #playerContainer {
-    margin-top: 10px;
+    margin-top: 25px;
     width: 320px;
     max-width: 90%;
     position: relative;
@@ -53,7 +72,7 @@
     border: none;
   }
 
-  #playBtn, #scanAgain {
+  button {
     margin-top: 15px;
     padding: 12px 25px;
     border: none;
@@ -61,26 +80,13 @@
     font-size: 16px;
     cursor: pointer;
     font-weight: 600;
-    transition: transform 0.2s ease;
-  }
-
-  #playBtn {
+    transition: transform 0.2s ease, background 0.3s ease;
     background: #fff;
     color: #6a0dad;
     display: none;
   }
 
-  #playBtn:hover {
-    transform: scale(1.05);
-  }
-
-  #scanAgain {
-    background: #fff;
-    color: #6a0dad;
-    display: none;
-  }
-
-  #scanAgain:hover {
+  button:hover {
     transform: scale(1.05);
   }
 
@@ -132,7 +138,6 @@ function playSong(id) {
 }
 
 function playTrack() {
-  // Reload iframe with autoplay param
   document.getElementById("playerIframe").src = currentSongUrl + "?autoplay=1";
   document.getElementById("playBtn").style.display = "none";
 }
@@ -142,12 +147,16 @@ function startScanner() {
   document.getElementById("playBtn").style.display = "none";
   document.getElementById("playerIframe").src = "";
 
+  const reader = document.getElementById("reader");
+  reader.classList.remove("active");
+
   Html5Qrcode.getCameras().then(devices => {
     if (devices && devices.length) {
       html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
         qrCodeMessage => {
+          reader.classList.add("active");
           html5QrCode.stop();
           playSong(qrCodeMessage);
         },
@@ -161,7 +170,6 @@ function restartScanner() {
   startScanner();
 }
 
-// Start scanner initially
 startScanner();
 </script>
 

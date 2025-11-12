@@ -25,7 +25,6 @@
     text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
   }
 
-  /* Silver bordered scanner box */
   #reader {
     position: relative;
     width: 320px;
@@ -41,12 +40,10 @@
     transition: box-shadow 0.3s ease;
   }
 
-  /* Glow effect when active */
   #reader.active {
     box-shadow: 0 0 20px 6px rgba(255,255,255,0.8);
   }
 
-  /* Make sure the camera feed stays centered */
   #reader video {
     width: 100% !important;
     height: 100% !important;
@@ -83,7 +80,6 @@
     transition: transform 0.2s ease, background 0.3s ease;
     background: #fff;
     color: #6a0dad;
-    display: none;
   }
 
   button:hover {
@@ -108,10 +104,10 @@
 
 <div id="playerContainer">
   <iframe id="playerIframe" src="" allowtransparency="true" allow="encrypted-media"></iframe>
-  <button id="playBtn" onclick="playTrack()">Play</button>
+  <button id="playBtn" onclick="playTrack()" style="display:none;">Play</button>
 </div>
 
-<button id="scanAgain" onclick="restartScanner()">Scan Another</button>
+<button id="scanAgain" onclick="restartScanner()" style="display:none;">Scan Another</button>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>

@@ -69,7 +69,7 @@
     border: none;
   }
 
-  button {
+  #scanAgain {
     margin-top: 15px;
     padding: 12px 25px;
     border: none;
@@ -80,9 +80,10 @@
     transition: transform 0.2s ease, background 0.3s ease;
     background: #fff;
     color: #6a0dad;
+    display: none;
   }
 
-  button:hover {
+  #scanAgain:hover {
     transform: scale(1.05);
   }
 
@@ -103,11 +104,10 @@
 <div id="reader"></div>
 
 <div id="playerContainer">
-  <iframe id="playerIframe" src="" allowtransparency="true" allow="encrypted-media"></iframe>
-  <button id="playBtn" onclick="playTrack()" style="display:none;">Play</button>
+  <iframe id="playerIframe" src="" allowtransparency="true" allow="encrypted-media" autoplay></iframe>
 </div>
 
-<button id="scanAgain" onclick="restartScanner()" style="display:none;">Scan Another</button>
+<button id="scanAgain" onclick="restartScanner()">Scan Another</button>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
@@ -127,20 +127,13 @@ function playSong(id) {
   const url = songs[cleanId];
   if (url) {
     currentSongUrl = url;
-    document.getElementById("playerIframe").src = url;
-    document.getElementById("playBtn").style.display = "inline-block";
+    document.getElementById("playerIframe").src = url + "?autoplay=1";
     document.getElementById("scanAgain").style.display = "inline-block";
   }
 }
 
-function playTrack() {
-  document.getElementById("playerIframe").src = currentSongUrl + "?autoplay=1";
-  document.getElementById("playBtn").style.display = "none";
-}
-
 function startScanner() {
   document.getElementById("scanAgain").style.display = "none";
-  document.getElementById("playBtn").style.display = "none";
   document.getElementById("playerIframe").src = "";
 
   const reader = document.getElementById("reader");

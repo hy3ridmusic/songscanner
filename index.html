@@ -9,6 +9,7 @@
     h1 { margin-bottom: 20px; }
     #reader { width: 300px; margin: auto; }
     iframe { margin-top: 20px; width: 300px; height: 80px; border: none; }
+    #scanAgain { margin-top: 15px; padding: 10px 20px; font-size: 16px; display: none; }
   </style>
 </head>
 <body>
@@ -16,10 +17,10 @@
 <h1>Scan a QR to play the song</h1>
 <div id="reader"></div>
 <div id="player"></div>
+<button id="scanAgain" onclick="restartScanner()">Scan Another</button>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-  // Map song IDs to Spotify embed URLs
   const songs = {
     "RG01": "https://open.spotify.com/embed/track/5YoITs1m0q8UOQ4AW7N5ga",  // Gasolina
     "RG02": "https://open.spotify.com/embed/track/0xVQGRRzpWgT9cshNdbx6B",  // Vivir Mi Vida
@@ -28,38 +29,43 @@
     "RG05": "https://open.spotify.com/embed/track/1H8oZ0F1l7Mx0z1oP3p3s9"   // La Gasolina Remix
   };
 
-  // Play song given the scanned ID
+  const readerId = "reader";
+  const html5QrCode = new Html5Qrcode(readerId);
+
   function playSong(id) {
-    const cleanId = id.trim(); // remove extra spaces or newlines
+    const cleanId = id.trim();
     const url = songs[cleanId];
     if (url) {
       document.getElementById("player").innerHTML =
-        `<iframe src="${url}" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
-    } else {
-      alert("Song ID not found!");
+        `<iframe src="${url}?autoplay=1" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media" allow="autoplay"></iframe>`;
+      document.getElementById("scanAgain").style.display = "inline-block";
     }
   }
 
-  const html5QrCode = new Html5Qrcode("reader");
+  function startScanner() {
+    document.getElementById("scanAgain").style.display = "none";
+    document.getElementById("player").innerHTML = "";
+    Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length) {
+        html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          qrCodeMessage => {
+            html5QrCode.stop();
+            playSong(qrCodeMessage);
+          },
+          errorMessage => console.log(errorMessage)
+        );
+      }
+    }).catch(err => console.error(err));
+  }
 
-  // Start the camera and scan
-  Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        qrCodeMessage => {
-          html5QrCode.stop();
-          playSong(qrCodeMessage);
-        },
-        errorMessage => {
-          console.log(errorMessage);
-        }
-      );
-    }
-  }).catch(err => {
-    console.error(err);
-  });
+  function restartScanner() {
+    startScanner();
+  }
+
+  // Start scanner initially
+  startScanner();
 </script>
 
 </body>

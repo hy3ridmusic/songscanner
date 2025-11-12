@@ -1,128 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SongScanner</title>
-<style>
-  :root{
-    --purple1:#6a0dad;
-    --purple2:#9b59b6;
-    --silver:linear-gradient(145deg,#d0d0d0,#a8a8a8);
-  }
-  body{
-    margin:0;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    font-family:Poppins,Arial,Helvetica,sans-serif;
-    background:linear-gradient(160deg,var(--purple1),var(--purple2));
-    color:white;
-    text-align:center;
-    padding:16px;
-  }
-  h1{margin:8px 0 20px;font-size:22px;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,0.25);}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SongScanner</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #8e2de2, #ffffff);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      overflow: hidden;
+    }
 
-  #reader{
-    width:320px;max-width:90vw;height:320px;max-height:90vw;
-    border-radius:20px;border:5px solid rgba(255,255,255,0.9);
-    overflow:hidden;display:flex;align-items:center;justify-content:center;
-    background:rgba(255,255,255,0.05);
-    box-shadow:0 8px 30px rgba(0,0,0,0.25);
-    position:relative;
-  }
-  #reader video,#reader canvas{
-    width:100%!important;height:100%!important;object-fit:cover;object-position:center;
-  }
+    h1 {
+      font-size: 26px;
+      margin-bottom: 10px;
+    }
 
-  #playerContainer{width:320px;max-width:90vw;margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:10px;}
-  iframe{width:100%;height:80px;border:none;border-radius:12px;background:#000;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
-  #scanAnother{
-    display:none;
-    background:var(--silver);
-    color:#111;
-    font-weight:700;
-    border:1px solid #eee;
-    padding:12px 28px;
-    border-radius:14px;
-    cursor:pointer;
-    box-shadow:0 4px 14px rgba(255,255,255,0.3),inset 0 1px 1px rgba(255,255,255,0.5);
-    transition:all .2s ease;
-  }
-  #scanAnother:hover{transform:scale(1.03);box-shadow:0 8px 26px rgba(255,255,255,0.35);}
-  #scanAnother:active{transform:scale(0.97);}
-  .hint{font-size:13px;color:rgba(255,255,255,0.9);}
-</style>
+    video {
+      width: 300px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 20px;
+      border: 8px solid;
+      border-image: linear-gradient(145deg, #c0c0c0, #9e9e9e) 1;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+    }
+
+    button {
+      background: linear-gradient(145deg, #c0c0c0, #9e9e9e);
+      color: white;
+      font-weight: 600;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 12px 24px;
+      margin-top: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: 0 3px 10px rgba(255, 255, 255, 0.3), inset 0 0 8px rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(145deg, #b8b8b8, #a0a0a0);
+      transform: scale(1.03);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+    }
+
+    button:active {
+      background: linear-gradient(145deg, #a0a0a0, #8c8c8c);
+      transform: scale(0.98);
+    }
+
+    iframe {
+      width: 300px;
+      height: 380px;
+      border: none;
+      border-radius: 16px;
+      margin-top: 20px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    }
+  </style>
 </head>
 <body>
-  <h1>SongScanner</h1>
-  <div id="reader"></div>
-  <div id="playerContainer">
-    <iframe id="playerFrame" allow="autoplay; encrypted-media" style="display:none"></iframe>
-    <button id="scanAnother">Scan another</button>
-    <div class="hint">Allow camera once. Tap Scan another to keep playing new cards.</div>
-  </div>
+  <h1>🎵 SongScanner</h1>
+  <video id="camera" autoplay playsinline></video>
+  <iframe id="spotifyPlayer" style="display:none;"></iframe>
+  <button id="scanAgain" style="display:none;">Scan Another</button>
 
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
-  const songs={
-    RG01:"https://open.spotify.com/embed/track/5YoITs1m0q8UOQ4AW7N5ga",
-    RG02:"https://open.spotify.com/embed/track/0xVQGRRzpWgT9cshNdbx6B",
-    RG03:"https://open.spotify.com/embed/track/3H7l8S1wD6V9uQzxE6bE2O",
-    RG04:"https://open.spotify.com/embed/track/2k3j9iA5Lr1bV3qTzZcX12",
-    RG05:"https://open.spotify.com/embed/track/1H8oZ0F1l7Mx0z1oP3p3s9"
-  };
+    const camera = document.getElementById("camera");
+    const player = document.getElementById("spotifyPlayer");
+    const scanButton = document.getElementById("scanAgain");
 
-  const html5QrCode=new Html5Qrcode("reader");
-  const playerFrame=document.getElementById("playerFrame");
-  const scanBtn=document.getElementById("scanAnother");
+    const scanner = new Html5Qrcode("camera");
 
-  function getEmbed(text){
-    const t=text.trim();
-    if(songs[t])return songs[t];
-    if(t.includes("open.spotify.com/track/")){
-      const id=t.split("track/")[1]?.split(/[?&#]/)[0];
-      if(id)return "https://open.spotify.com/embed/track/"+id;
-    }
-    if(t.startsWith("spotify:track:")){
-      const id=t.replace("spotify:track:","");
-      return "https://open.spotify.com/embed/track/"+id;
-    }
-    return null;
-  }
-
-  function startScanner(){
-    playerFrame.style.display="none";
-    playerFrame.src="";
-    scanBtn.style.display="none";
-    Html5Qrcode.getCameras().then(cams=>{
-      const cam=cams.find(c=>c.label.toLowerCase().includes("back"))||cams[0];
-      html5QrCode.start(
-        {deviceId:cam.id},
-        {fps:10,qrbox:{width:250,height:250}},
-        (decoded)=>{
-          html5QrCode.stop();
-          const url=getEmbed(decoded);
-          if(url){
-            playerFrame.src=url;
-            playerFrame.style.display="block";
-            scanBtn.style.display="inline-block";
-          }else{
-            alert("Invalid code");
-            startScanner();
+    async function startScanner() {
+      player.style.display = "none";
+      scanButton.style.display = "none";
+      camera.style.display = "block";
+      try {
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          (decodedText) => {
+            if (decodedText.includes("open.spotify.com/track/")) {
+              showPlayer(decodedText);
+            }
           }
-        }
-      );
-    });
-  }
+        );
+      } catch (err) {
+        console.error("Camera start error:", err);
+      }
+    }
 
-  scanBtn.addEventListener("click",()=>{
-    html5QrCode.stop().catch(()=>{}).finally(()=>startScanner());
-  });
+    function showPlayer(url) {
+      scanner.stop();
+      camera.style.display = "none";
+      player.src = `https://open.spotify.com/embed/track/${getTrackId(url)}`;
+      player.style.display = "block";
+      scanButton.style.display = "inline-block";
+    }
 
-  startScanner();
+    function getTrackId(url) {
+      const parts = url.split("track/");
+      return parts[1] ? parts[1].split("?")[0] : "";
+    }
+
+    scanButton.addEventListener("click", startScanner);
+
+    startScanner();
   </script>
 </body>
 </html>

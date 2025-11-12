@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Music QR Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f0f0f0; }
+    h1 { margin-bottom: 20px; }
+    #reader { width: 300px; margin: auto; }
+    iframe { margin-top: 20px; width: 300px; height: 80px; border: none; }
+  </style>
+</head>
+<body>
+
+<h1>Scan a QR to play the song</h1>
+<div id="reader"></div>
+<div id="player"></div>
+
+<!-- html5-qrcode library -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+  // Song database: QR code ID -> Spotify embed URL
+  const songs = {
+    "RG01": "https://open.spotify.com/embed/track/5YoITs1m0q8UOQ4AW7N5ga", // Gasolina
+    "RG02": "https://open.spotify.com/embed/track/0xVQGRRzpWgT9cshNdbx6B", // Vivir Mi Vida
+    "RG03": "https://open.spotify.com/embed/track/3H7l8S1wD6V9uQzxE6bE2O", // Bailando
+    "RG04": "https://open.spotify.com/embed/track/2k3j9iA5Lr1bV3qTzZcX12", // Despacito
+    "RG05": "https://open.spotify.com/embed/track/1H8oZ0F1l7Mx0z1oP3p3s9"  // La Gasolina Remix
+  };
+
+  function playSong(id) {
+    const url = songs[id];
+    if(url){
+      document.getElementById("player").innerHTML = `<iframe src="${url}" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+    } else {
+      alert("Song ID not found!");
+    }
+  }
+
+  const html5QrCode = new Html5Qrcode("reader");
+
+  Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        qrCodeMessage => {
+          html5QrCode.stop();
+          playSong(qrCodeMessage);
+        },
+        errorMessage => {
+          console.log(errorMessage);
+        }
+      );
+    }
+  }).catch(err => {
+    console.error(err);
+  });
+</script>
+
+</body>
+</html>

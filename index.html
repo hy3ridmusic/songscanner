@@ -3,119 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SongScanner</title>
+  <title>Song Scanner</title>
   <style>
     body {
+      margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #8e2de2, #ffffff);
-      color: white;
+      background: linear-gradient(180deg, #8b5cf6, #ec4899);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      margin: 0;
+      color: white;
       text-align: center;
-      overflow: hidden;
     }
 
     h1 {
-      font-size: 26px;
+      font-size: 1.8em;
       margin-bottom: 10px;
     }
 
-    video {
-      width: 300px;
-      height: 300px;
-      object-fit: cover;
+    #camera {
+      border: 5px solid silver;
       border-radius: 20px;
-      border: 8px solid;
-      border-image: linear-gradient(145deg, #c0c0c0, #9e9e9e) 1;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-    }
-
-    button {
-      background: linear-gradient(145deg, #c0c0c0, #9e9e9e);
-      color: white;
-      font-weight: 600;
-      border: 1px solid #e0e0e0;
-      border-radius: 12px;
-      padding: 12px 24px;
-      margin-top: 20px;
-      cursor: pointer;
-      font-size: 16px;
-      box-shadow: 0 3px 10px rgba(255, 255, 255, 0.3), inset 0 0 8px rgba(255, 255, 255, 0.1);
-      transition: all 0.2s ease;
-    }
-
-    button:hover {
-      background: linear-gradient(145deg, #b8b8b8, #a0a0a0);
-      transform: scale(1.03);
-      box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
-    }
-
-    button:active {
-      background: linear-gradient(145deg, #a0a0a0, #8c8c8c);
-      transform: scale(0.98);
-    }
-
-    iframe {
-      width: 300px;
-      height: 380px;
-      border: none;
-      border-radius: 16px;
-      margin-top: 20px;
+      overflow: hidden;
+      width: 280px;
+      height: 280px;
+      background-color: black;
+      margin-bottom: 15px;
+      position: relative;
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #scanAnother {
+      display: none;
+      background: white;
+      color: #8b5cf6;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: 0.3s;
+    }
+
+    #scanAnother:hover {
+      background: #8b5cf6;
+      color: white;
+    }
+
+    #player {
+      display: none;
+      width: 90%;
+      max-width: 400px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>🎵 SongScanner</h1>
-  <video id="camera" autoplay playsinline></video>
-  <iframe id="spotifyPlayer" style="display:none;"></iframe>
-  <button id="scanAgain" style="display:none;">Scan Another</button>
+  <h1>Scan Your Song</h1>
+  <div id="camera">
+    <video id="preview"></video>
+  </div>
+  <iframe id="player" allow="autoplay; encrypted-media" frameborder="0"></iframe>
+  <button id="scanAnother">Scan Another</button>
 
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script>
-    const camera = document.getElementById("camera");
-    const player = document.getElementById("spotifyPlayer");
-    const scanButton = document.getElementById("scanAgain");
+    const player = document.getElementById('player');
+    const scanAnother = document.getElementById('scanAnother');
+    const camera = document.getElementById('camera');
 
-    const scanner = new Html5Qrcode("camera");
-
-    async function startScanner() {
-      player.style.display = "none";
-      scanButton.style.display = "none";
-      camera.style.display = "block";
-      try {
-        await scanner.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: 250 },
-          (decodedText) => {
-            if (decodedText.includes("open.spotify.com/track/")) {
-              showPlayer(decodedText);
-            }
+    function startScanner() {
+      player.style.display = 'none';
+      scanAnother.style.display = 'none';
+      camera.style.display = 'block';
+      const html5QrCode = new Html5Qrcode("camera");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        qrCodeMessage => {
+          if (qrCodeMessage.includes("spotify.com")) {
+            html5QrCode.stop();
+            camera.style.display = 'none';
+            player.style.display = 'block';
+            scanAnother.style.display = 'inline-block';
+            const spotifyEmbed = qrCodeMessage.replace("open.spotify.com/track/", "open.spotify.com/embed/track/");
+            player.src = spotifyEmbed + "?utm_source=generator&autoplay=1";
           }
-        );
-      } catch (err) {
-        console.error("Camera start error:", err);
-      }
+        },
+        errorMessage => {}
+      ).catch(err => console.error(err));
     }
 
-    function showPlayer(url) {
-      scanner.stop();
-      camera.style.display = "none";
-      player.src = `https://open.spotify.com/embed/track/${getTrackId(url)}`;
-      player.style.display = "block";
-      scanButton.style.display = "inline-block";
-    }
-
-    function getTrackId(url) {
-      const parts = url.split("track/");
-      return parts[1] ? parts[1].split("?")[0] : "";
-    }
-
-    scanButton.addEventListener("click", startScanner);
+    scanAnother.addEventListener('click', startScanner);
 
     startScanner();
   </script>

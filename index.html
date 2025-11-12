@@ -5,46 +5,107 @@
   <title>Music QR Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f0f0f0; }
-    h1 { margin-bottom: 20px; }
-    #reader { width: 300px; margin: auto; }
-    iframe { margin-top: 20px; width: 300px; height: 80px; border: none; }
-    #scanAgain { margin-top: 15px; padding: 10px 20px; font-size: 16px; display: none; }
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #1e1e1e;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 30px;
+      font-weight: 300;
+      color: #f39c12;
+    }
+    #reader {
+      width: 300px;
+      margin: 0 auto;
+      border: 2px solid #f39c12;
+      border-radius: 10px;
+      padding: 10px;
+      background: #2c2c2c;
+    }
+    #playerContainer {
+      margin-top: 20px;
+      position: relative;
+    }
+    iframe {
+      width: 300px;
+      height: 80px;
+      border-radius: 10px;
+      border: none;
+    }
+    #playBtn {
+      margin-top: 10px;
+      padding: 12px 25px;
+      background: #f39c12;
+      color: #1e1e1e;
+      border: none;
+      border-radius: 25px;
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+    }
+    #scanAgain {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 20px;
+      background: #fff;
+      color: #1e1e1e;
+      border: none;
+      cursor: pointer;
+      display: none;
+    }
   </style>
 </head>
 <body>
 
 <h1>Scan a QR to play the song</h1>
 <div id="reader"></div>
-<div id="player"></div>
+
+<div id="playerContainer">
+  <iframe id="playerIframe" src="" allowtransparency="true" allow="encrypted-media"></iframe>
+  <button id="playBtn" onclick="playTrack()">Play</button>
+</div>
+
 <button id="scanAgain" onclick="restartScanner()">Scan Another</button>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
   const songs = {
-    "RG01": "https://open.spotify.com/embed/track/5YoITs1m0q8UOQ4AW7N5ga",  // Gasolina
-    "RG02": "https://open.spotify.com/embed/track/0xVQGRRzpWgT9cshNdbx6B",  // Vivir Mi Vida
-    "RG03": "https://open.spotify.com/embed/track/3H7l8S1wD6V9uQzxE6bE2O",  // Bailando
-    "RG04": "https://open.spotify.com/embed/track/2k3j9iA5Lr1bV3qTzZcX12",  // Despacito
-    "RG05": "https://open.spotify.com/embed/track/1H8oZ0F1l7Mx0z1oP3p3s9"   // La Gasolina Remix
+    "RG01": "https://open.spotify.com/embed/track/5YoITs1m0q8UOQ4AW7N5ga",
+    "RG02": "https://open.spotify.com/embed/track/0xVQGRRzpWgT9cshNdbx6B",
+    "RG03": "https://open.spotify.com/embed/track/3H7l8S1wD6V9uQzxE6bE2O",
+    "RG04": "https://open.spotify.com/embed/track/2k3j9iA5Lr1bV3qTzZcX12",
+    "RG05": "https://open.spotify.com/embed/track/1H8oZ0F1l7Mx0z1oP3p3s9"
   };
 
-  const readerId = "reader";
-  const html5QrCode = new Html5Qrcode(readerId);
+  let currentSongUrl = "";
+  const html5QrCode = new Html5Qrcode("reader");
 
   function playSong(id) {
     const cleanId = id.trim();
     const url = songs[cleanId];
     if (url) {
-      document.getElementById("player").innerHTML =
-        `<iframe src="${url}?autoplay=1" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media" allow="autoplay"></iframe>`;
+      currentSongUrl = url;
+      document.getElementById("playerIframe").src = url;
+      document.getElementById("playBtn").style.display = "inline-block";
       document.getElementById("scanAgain").style.display = "inline-block";
     }
   }
 
+  function playTrack() {
+    // Reload iframe to force play on mobile
+    document.getElementById("playerIframe").src = currentSongUrl + "?autoplay=1";
+    document.getElementById("playBtn").style.display = "none";
+  }
+
   function startScanner() {
     document.getElementById("scanAgain").style.display = "none";
-    document.getElementById("player").innerHTML = "";
+    document.getElementById("playBtn").style.display = "none";
+    document.getElementById("playerIframe").src = "";
+
     Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length) {
         html5QrCode.start(
